@@ -1,6 +1,6 @@
 # Partsbox
 
-A collection of [clj-firmata](https://github.com/peterschwarz/clj-firmata) electronic components for use with their physical counter parts over the firmata protocol. 
+A collection of [clj-firmata](https://github.com/peterschwarz/clj-firmata) electronic components for use with their physical counterparts over the firmata protocol. 
 
 ## Usage
 
