@@ -1,16 +1,15 @@
 # Partsbox
 
+```clojure
+[partsbox "0.1.0-SNAPSHOT"]
+```
+
 A collection of [clj-firmata](https://github.com/peterschwarz/clj-firmata) electronic components for use with their physical counterparts over the firmata protocol. 
 
-## Usage
+## Currently available parts
 
-### LCD
-
-FIXME
-
-### Shift Register
-
-FIXME
+* LCD
+* Shift Register
 
 ## License
 
