@@ -1,8 +1,8 @@
 (ns partsbox.lcd
   (:refer-clojure :exclude [print println])
   (:require [firmata.core :refer :all]
-            [firmata.util])
-  (:import [java.util.concurrent TimeUnit]))
+            [firmata.util]
+            [partsbox.util :refer [delay-micros]]))
 
 ; commands
 (def ^{:private true} LCD_CLEARDISPLAY   0x01)
@@ -80,8 +80,6 @@
 (defn- high-low [x]
   (if (= 0 x) :low :high))
 
-(defn- delay-micros [micros]
-  (.sleep TimeUnit/MICROSECONDS micros))
 
 ; 
 ; Low-level commands
