@@ -1,6 +1,10 @@
 (ns partsbox.adafruit-pwm
+  "Controls for managing an Adafruit 16-channel servo driver
+  
+  Code adapted from https://github.com/adafruit/Adafruit-PWM-Servo-Driver-Library"
   (:require [firmata.i2c :as i2c]
             [firmata.async :refer [topic-event-chan]]
+            [firmata.util :refer [arduino-map]]
             [partsbox.util :refer [delay-micros]]
             [clojure.core.async :as async :refer [<!!]]))
 
@@ -35,13 +39,9 @@
 
 (defn- read8 [servo-driver addr]
   (let [{:keys [board slave-address]} servo-driver
-        _ (println "creating i2c-ch")
         i2c-ch (topic-event-chan board :i2c-reply 1)
-        _ (println "sending read-once request")
         _ (i2c/send-i2c-request board slave-address :read-once addr 1)
-        _ (println "waiting on reply")
         d (:data (<!! i2c-ch))]
-    (println "reply received:" d)
     (async/close! i2c-ch)
     (first d)))
 
@@ -55,10 +55,8 @@
 (defn set-pwm-frequency [servo-driver freq]
   (let [freq (* freq 0.9)
         prescale (-> 25000000
-                     (/ 4096)
-                     (/ freq)
-                     dec
-                     (+ 0.5)
+                     (/ 4096 freq)
+                     (- 0.5)
                      Math/floor
                      int)
         oldmode (read8 servo-driver PCA9685_MODE1)
@@ -84,7 +82,7 @@
    the pulse for sinking to ground.  Val should be a value from 0 to 4095 inclusive."
   ([servo-driver reg v] (set-pin servo-driver reg v false))
   ([servo-driver reg v invert?]
-   (let [v (Math/min v 4095)]
+   (let [v (min v 4095)]
      (if invert?
        (case v
          0 (set-pwm servo-driver reg 4095 0)
@@ -94,4 +92,29 @@
          4095 (set-pwm servo-driver reg 4096 0)
          0 (set-pwm servo-driver reg 0 4096)
          (set-pwm servo-driver reg 0 v))))))
+
+; individual servo
+
+(defprotocol Servo 
+  (set-angle! [servo angle])
+  (set-pwm! [servo on off])
+  (set-val! [servo v] [servo v invert?]))
+
+(defrecord PwmServo [servo-driver register servo-min servo-max]
+  Servo
+  (set-angle! [this angle]
+    (set-pwm! this 0 (arduino-map angle 0 180 servo-min servo-max)))
+
+  (set-pwm! [_ on off]
+    (set-pwm servo-driver register on off))
+  
+  (set-val! [_ v]
+    (set-pin servo-driver register v))
+  
+  (set-val! [_ v invert?]
+    (set-pin servo-driver register v invert?)))
+
+(defn create-servo
+  [servo-driver register servo-min servo-max]
+  (PwmServo. servo-driver register servo-min servo-max))
 
