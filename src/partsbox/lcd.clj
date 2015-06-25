@@ -119,7 +119,7 @@
   (set-digital (:board lcd) (:rs-pin lcd) mode)
 
   (when (:rw-pin lcd)
-    (set-digital (:board lcd) (:rw-pin) :low))
+    (set-digital (:board lcd) (:rw-pin lcd) :low))
 
   (if (has-bit-values? (:display-function lcd) LCD_8BITMODE)
     (write-8bits lcd value)
@@ -223,15 +223,15 @@
     (command lcd (bit-or LCD_SETDDRAMADDR (+ col (get row-offsets r)))))
   lcd)
 
-(defn- display-setting-on [lcd key setting]
-  (let [updated-value (bit-or (key lcd) setting)]
+(defn- display-setting-on [lcd k setting]
+  (let [updated-value (bit-or (k lcd) setting)]
     (command lcd updated-value)
-    (assoc lcd key updated-value)))
+    (assoc lcd k updated-value)))
 
-(defn- display-setting-off [lcd key setting]
-  (let [updated-value (bit-and (key lcd) (bit-not setting))]
+(defn- display-setting-off [lcd k setting]
+  (let [updated-value (bit-and (k lcd) (bit-not setting))]
     (command lcd updated-value)
-    (assoc lcd key updated-value)))
+    (assoc lcd k updated-value)))
 
 (defn no-display [lcd] (display-setting-off lcd :display-control LCD_DISPLAYON))
 (defn display    [lcd] (display-setting-on  lcd :display-control LCD_DISPLAYON))
@@ -249,11 +249,11 @@
 (defn no-autoscroll [lcd] (display-setting-off lcd :display-mode LCD_ENTRYSHIFTINCREMENT))
 
 (defn scroll-display-left [lcd] 
-  (command (bit-or LCD_CURSORSHIFT LCD_DISPLAYMOVE LCD_MOVELEFT))
+  (command lcd (bit-or LCD_CURSORSHIFT LCD_DISPLAYMOVE LCD_MOVELEFT))
   lcd)
 
 (defn scroll-display-right [lcd] 
-  (command (bit-or LCD_CURSORSHIFT LCD_DISPLAYMOVE LCD_MOVERIGHT))
+  (command lcd (bit-or LCD_CURSORSHIFT LCD_DISPLAYMOVE LCD_MOVERIGHT))
   lcd)
 
 (defn create-char [lcd location char-map]
